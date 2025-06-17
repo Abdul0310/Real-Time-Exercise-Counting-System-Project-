@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gym-Goer Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="overlay"></div>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('pushup') }}">Push-up</a></li>
+                <li><a href="{{ url_for('squat') }}">Squat</a></li>
+                <li><a href="{{ url_for('jump') }}">Jumping Rope</a></li>
+                <li><a href="{{ url_for('curl') }}">Curl count</a></li>
+                <li><a href="#" onclick="stopWebcam()">Stop Webcam</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+                {% if 'username' in session %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <h1>Exercise Counting System Dashboard</h1>
+        
+        <div class="exercise-container">
+            <div class="exercise-item">
+                <img src="{{ url_for('static', filename='images/pushup.jpg') }}" alt="Push-up">
+                <p>Push-up Count: {{ pushup_count }}</p>
+            </div>
+            
+            <div class="exercise-item">
+                <img src="{{ url_for('static', filename='images/squat.jpg') }}" alt="Squat">
+                <p>Squat Count: {{ squat_count }}</p>
+            </div>
+            
+            <div class="exercise-item">
+                <img src="{{ url_for('static', filename='images/jump.jpg') }}" alt="Jump">
+                <p>Jump Count: {{ jump_count }}</p>
+            </div>
+            
+            <div class="exercise-item">
+                <img src="{{ url_for('static', filename='images/curl.jpg') }}" alt="Curl">
+                <p>Curl Count: {{ curl_count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function stopWebcam() {
+            fetch('/stop_webcam', { method: 'POST' })
+                .then(response => console.log('Webcam stopped'))
+                .catch(error => console.error('Error stopping webcam:', error));
+        }
+    </script>
+</body>
+</html>

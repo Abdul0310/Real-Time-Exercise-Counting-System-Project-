@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Push-up Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('pushup') }}">Push-up</a></li>
+            <li><a href="{{ url_for('squat') }}">Squat</a></li>
+            <li><a href="{{ url_for('jump') }}">Jumping Rope</a></li>
+            <li><a href="{{ url_for('curl') }}">Curl count</a></li>
+            <li><a href="#" onclick="stopWebcam()">Stop Webcam</a></li>
+            {% if 'username' in session %}
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+   <h1>Squat Result</h1>
+    <img src="{{ url_for('process_video_route', exercise_type='squat') }}" width="640" height="480">
+    <p>Count: {{ count }}</p>
+    <a href="{{ url_for('squat') }}">Back to Squat Counter</a>
+</body>
+</html>

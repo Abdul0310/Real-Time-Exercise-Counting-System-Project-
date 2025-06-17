@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gym-Goer Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('pushup') }}">Push-up</a></li>
+            <li><a href="{{ url_for('squat') }}">Squat</a></li>
+            <li><a href="{{ url_for('jump') }}">Jumping Rope</a></li>
+            <li><a href="{{ url_for('curl') }}">Curl count</a></li>
+            <li><a href="#" onclick="stopWebcam()">Stop Webcam</a></li>
+            {% if 'username' in session %}
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <h1>Jump Counter</h1>
+    <img src="{{ url_for('video_feed', exercise_type='jump') }}" width="640" height="480">
+    <p>Count: {{ count }}</p>
+    <button onclick="resetActivity('jump')">Reset Activity</button>
+
+     <!-- Add this script at the end of the body -->
+     <script>
+    function resetActivity(exerciseType) {
+        fetch(`/reset_${exerciseType}`, { method: 'POST' })
+            .then(() => {
+                location.reload();
+            })
+            .catch(error => console.error('Error resetting activity:', error));
+    }
+    </script>
+
+        <h2>Upload Video</h2>
+        <form method="POST" action="{{ url_for('upload_video', exercise_type='jump') }}" enctype="multipart/form-data">
+            <input type="file" name="video" accept="video/*" required>
+            <button type="submit">Upload and Analyze</button>
+        </form>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Squat Counter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+      <script>
+        function stopWebcam() {
+            fetch('/stop_webcam', { method: 'POST' })
+                .then(response => console.log('Webcam stopped'))
+                .catch(error => console.error('Error stopping webcam:', error));
+        }
+
+        function resetActivity(exerciseType) {
+            fetch(`/reset_${exerciseType}`, { method: 'POST' })
+                .then(() => {
+                    location.reload();
+                })
+                .catch(error => console.error('Error resetting activity:', error));
+        }
+document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const fileInput = document.getElementById('videoFile');
+                    const file = fileInput.files[0];
+                    if (!file) {
+                        alert('Please select a video file');
+                        return;
+                    }
+                    
+                    const chunkSize = 1024 * 1024 * 5; // 5MB chunk size
+                    let start = 0;
+                    let end = chunkSize;
+                    let chunkCount = 0;
+                    const totalChunks = Math.ceil(file.size / chunkSize);
+                    
+                    const uploadChunk = () => {
+                        if (start >= file.size) {
+                            return;
+                        }
+                        
+                        chunkCount++;
+                        end = Math.min(start + chunkSize, file.size);
+                        const chunk = file.slice(start, end);
+                        const formData = new FormData();
+                        formData.append('video', chunk);
+                        formData.append('filename', file.name);
+                        formData.append('chunk', chunkCount);
+                        formData.append('totalChunks', totalChunks);
+                        
+                        fetch('/upload_squat', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                start = end;
+                                end = start + chunkSize;
+                                showProgress(chunkCount, totalChunks);
+                                if (chunkCount === totalChunks) {
+                                    // Redirect to processing route after a short delay
+                                    setTimeout(() => {
+                                        window.location.href = `/process_video/squat?video_path=${data.video_path}`;
+                                    }, 1000);
+                                } else {
+                                    uploadChunk();
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error uploading chunk:', error);
+                        });
+                    };
+                    
+                    uploadChunk();
+                });
+            }
+        });
+
+        function showProgress(current, total) {
+            const progressDiv = document.getElementById('progress');
+            progressDiv.innerHTML = `Uploading chunk ${current} of ${total}`;
+        }
+           
+    </script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('pushup') }}">Push-up</a></li>
+            <li><a href="{{ url_for('squat') }}">Squat</a></li>
+            <li><a href="{{ url_for('jump') }}">Jumping Rope</a></li>
+            <li><a href="{{ url_for('curl') }}">Curl count</a></li>
+             <li><a href="#" onclick="stopWebcam()">Stop Webcam</a></li> <!-- Updated Stop Webcam Link -->
+            <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% if 'username' in session %}
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+            {% endif %}
+   
+        </ul>
+    </nav>
+    <h1>Squat Counter</h1>
+    <img src="{{ url_for('video_feed', exercise_type='squat') }}" width="640" height="480">
+    <p>Count: {{ count }}</p>
+    <button onclick="resetActivity('squat')">Reset Activity</button>
+
+    <h2>Upload Video</h2>
+    <form id="uploadForm">
+        <input type="file" id="videoFile" accept="video/*" required>
+        <button type="submit">Upload and Analyze</button>
+    </form>
+    <div id="progress"></div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Processing Video</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('pushup') }}">Push-up</a></li>
+            <li><a href="{{ url_for('squat') }}">Squat</a></li>
+            <li><a href="{{ url_for('jump') }}">Jumping Rope</a></li>
+            <li><a href="{{ url_for('curl') }}">Curl count</a></li>
+            <li><a href="#" onclick="stopProcessing()">Stop Processing</a></li>
+            {% if 'username' in session %}
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <h1>Processing Video</h1>
+    <img src="{{ url_for('process_video_route', exercise_type=exercise_type, video_path=video_path) }}" width="640" height="480">
+    <p>Count: <span id="count">0</span></p>
+    <button onclick="stopProcessing()">Stop Processing</button>
+
+    <script>
+        function stopProcessing() {
+            // Implement stopping logic here
+            alert('Processing stopped');
+            window.location.href = "{{ url_for('index') }}";
+        }
+
+        // Update count from server periodically
+        let count = 0;
+        const countElement = document.getElementById('count');
+        const exerciseType = "{{ exercise_type }}";
+        
+        setInterval(() => {
+            fetch(`/get_count/${exerciseType}`)
+                .then(response => response.json())
+                .then(data => {
+                    countElement.textContent = data.count;
+                })
+                .catch(error => console.error('Error fetching count:', error));
+        }, 1000);
+    </script>
+</body>
+</html>

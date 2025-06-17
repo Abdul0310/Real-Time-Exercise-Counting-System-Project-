@@ -1,0 +1,6 @@
+flask
+opencv-python
+numpy
+mediapipe
+flask-sqlalchemy
+werkzeug==2.2.3
